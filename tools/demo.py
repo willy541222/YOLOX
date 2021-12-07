@@ -7,7 +7,8 @@ from loguru import logger
 import cv2
 
 import torch
-
+import sys
+sys.path.append(r'D:/YOLOX')
 from yolox.data.data_augment import preproc
 from yolox.data.datasets import COCO_CLASSES
 from yolox.exp import get_exp

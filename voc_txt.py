@@ -6,25 +6,8 @@ from pathlib import Path
 if len(sys.argv) < 2:
     print("no directory specified, please input target directory")
     exit()
-
+xmlfilepath = "D:/YOLOX/datasets/VOCdevkit/VOC2007/Annotations"
 root_path = sys.argv[1]
-
-xmlfilepath = root_path + 'VOC2007/Annotations/'
-os.mkdir(xmlfilepath)
-imagefilepath = root_path + 'VOC2007/JPEGImages/'
-os.mkdir(imagefilepath)
-
-# Move annotations to annotations folder
-for filename in os.listdir(root_path):
-    if filename.endswith('.xml'):
-        with open(os.path.join(root_path, filename)) as f:
-            Path(root_path + filename).rename(xmlfilepath + filename)
-
-    if filename.endswith('.jpg'):
-        with open(os.path.join(root_path, filename)) as f:
-            Path(root_path + filename).rename(imagefilepath + filename)
-
-
 txtsavepath = root_path + '/VOC2007/ImageSets/Main'
 
 if not os.path.exists(root_path):
