@@ -4,7 +4,8 @@
 
 import os
 import torch.nn as nn
-
+import sys
+sys.path.append(r'D:/YOLOX')
 from yolox.exp import Exp as MyExp
 
 
