@@ -136,6 +136,7 @@ class Predictor(object):
         img_info["raw_img"] = img
 
         img, ratio = preproc(img, self.test_size, self.rgb_means, self.std)
+        print(img)
         img_info["ratio"] = ratio
         img = torch.from_numpy(img).unsqueeze(0)
         if self.device == "gpu":
@@ -144,6 +145,10 @@ class Predictor(object):
         with torch.no_grad():
             t0 = time.time()
             outputs = self.model(img)
+            #print(type(outputs)) # torch.Tensor
+            #print(outputs)
+            print(len(outputs)) #1
+            print(outputs.shape) #(1,8400,6)
             if self.decoder is not None:
                 outputs = self.decoder(outputs, dtype=outputs.type())
             outputs = postprocess(
@@ -179,6 +184,7 @@ def image_demo(predictor, vis_folder, path, current_time, save_result):
     files.sort()
     for image_name in files:
         outputs, img_info = predictor.inference(image_name)
+        print(outputs)
         result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
         if save_result:
             save_folder = os.path.join(

@@ -205,6 +205,12 @@ def preproc(image, input_size, mean, std, swap=(2, 0, 1)):
     padded_img = np.ascontiguousarray(padded_img, dtype=np.float32)
     return padded_img, r
 
+def sliding_window(image, ystepSize, xstepSize, windowSize, ypadding=0):
+    for y in range(ypadding, image.shape[0], ystepSize):
+        for x in range(0, image.shape[1], xstepSize):
+            # yield the current window
+            yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]],)
+    return
 
 class TrainTransform:
     def __init__(self, p=0.5, rgb_means=None, std=None, max_labels=50):
