@@ -150,31 +150,30 @@ class Predictor(object):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                img = image[y:y + winH, x:x + winW].astype(np.float32)
+                # Crop the image.
+                img = window.astype(np.float32)
                 img /= 255.0
                 if self.rgb_means is not None:
                     img -= self.rgb_means
                 if self.std is not None:
                     img /= self.std
                 swap = (2, 0, 1)
-                img = img.transpose(swap)
+                img = img.transpose(swap) # Change to the pytorch require type.
                 img = np.ascontiguousarray(img, dtype=np.float32)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
                 with torch.no_grad():
-                    outputs = self.model(img)
-                    #print(outputs)
+                    outputs = self.model(img) #detection
                     if i == 0:
                         new_outputs = outputs
                         i += 1
                     else:
-                        #print(outputs[:, :, 0])
+                        # The bounding box of sliding image need to return the real position.
+                        # outputs[:, :, :4] = (x center, y center, w, h)
                         outputs[:, :, 0] = torch.add(outputs[:, :, 0], x)
                         outputs[:, :, 1] = torch.add(outputs[:, :, 1], y)
-                        #print(outputs[:, :, 1])
-                        new_outputs = torch.cat((new_outputs, outputs), 1)
-                    #print(new_outputs.shape)
+                        new_outputs = torch.cat((new_outputs, outputs), 1) #(1, 50400, 6)
             if self.decoder is not None:
                 outputs = self.decoder(new_outputs, dtype=outputs.type())
             outputs = postprocess(
@@ -184,12 +183,13 @@ class Predictor(object):
 
         elif image.shape[0] == 1242:
             # 2208*1242 (W*H) y : 602 x : 522
+            t0 = time.time()
             for (x, y, window) in sliding_window(image, ystepSize=602, xstepSize=522,
                                                  windowSize=(winW, winH)):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                img = image[y:y + winH, x:x + winW].astype(np.float32)
+                img = window.astype(np.float32)
                 img /= 255.0
                 if self.rgb_means is not None:
                     img -= self.rgb_means
@@ -222,12 +222,13 @@ class Predictor(object):
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
 
         else:
+            t0 = time.time()
             for (x, y, window) in sliding_window(image, ypadding=40, ystepSize=41, xstepSize=320,
                                                  windowSize=(winW, winH)):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                img = image[y:y + winH, x:x + winW].astype(np.float32)
+                img = window.astype(np.float32)
                 img /= 255.0
                 if self.rgb_means is not None:
                     img -= self.rgb_means

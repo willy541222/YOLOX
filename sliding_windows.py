@@ -42,8 +42,6 @@ elif image.shape[0] == 1242:
         # if the window does not meet our desired window size, ignore it
         if window.shape[0] != winH or window.shape[1] != winW:
             continue
-        img = image[x:x + winW, y:y + winH]
-        img_list.append(img)
         clone = image.copy()
         cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 2)
         cv2.imshow("Window", clone)
