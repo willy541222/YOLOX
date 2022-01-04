@@ -1,4 +1,3 @@
-import imutils
 import argparse
 import time
 import cv2
