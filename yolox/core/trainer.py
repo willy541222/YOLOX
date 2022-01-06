@@ -251,15 +251,15 @@ class Trainer:
             """
             for k, v in loss_meter.items():
                 if k == "total_loss":
-                    self.tblogger.add_scalar("Train/Total loss", v, self.iter + 1)
+                    self.tblogger.add_scalar("Train/Total loss", v.latest, self.iter + 1)
                 elif k == "iou_loss":
-                    self.tblogger.add_scalar("Train/iou loss", v, self.iter + 1)
+                    self.tblogger.add_scalar("Train/iou loss", v.latest, self.iter + 1)
                 elif k == "l1_loss":
-                    self.tblogger.add_scalar("Train/L1 loss", v, self.iter + 1)
+                    self.tblogger.add_scalar("Train/L1 loss", v.latest, self.iter + 1)
                 elif k == "conf_loss":
-                    self.tblogger.add_scalar("Train/confidence loss", v, self.iter + 1)
+                    self.tblogger.add_scalar("Train/confidence loss", v.latest, self.iter + 1)
                 else:
-                    self.tblogger.add_scalar("Train/classification loss", v, self.iter + 1)
+                    self.tblogger.add_scalar("Train/classification loss", v.latest, self.iter + 1)
 
             time_meter = self.meter.get_filtered_meter("time")
             time_str = ", ".join(
