@@ -241,6 +241,25 @@ class Trainer:
             loss_str = ", ".join(
                 ["{}: {:.1f}".format(k, v.latest) for k, v in loss_meter.items()]
             )
+            """
+            Tensorboard Training response Loss:
+                * Total loss
+                * iou loss
+                * L1 loss (MAE loss, Mean Absolute Error)
+                * confidence loss
+                * classification loss
+            """
+            for k, v in loss_meter.items():
+                if k == "total_loss":
+                    self.tblogger.add_scalar("Train/Total loss", v, self.iter + 1)
+                elif k == "iou_loss":
+                    self.tblogger.add_scalar("Train/iou loss", v, self.iter + 1)
+                elif k == "l1_loss":
+                    self.tblogger.add_scalar("Train/L1 loss", v, self.iter + 1)
+                elif k == "conf_loss":
+                    self.tblogger.add_scalar("Train/confidence loss", v, self.iter + 1)
+                else:
+                    self.tblogger.add_scalar("Train/classification loss", v, self.iter + 1)
 
             time_meter = self.meter.get_filtered_meter("time")
             time_str = ", ".join(

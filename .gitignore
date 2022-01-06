@@ -5,8 +5,8 @@
 datasets/
 YOLOX_outputs/
 assets/
-IOU_datasets/
-test/
+IOU_dataset/
+Original_dataset/
 
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
@@ -219,3 +219,4 @@ events.out.tfevents*
 
 # vim
 .vim
+/IOU_dataset/

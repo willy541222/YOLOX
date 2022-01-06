@@ -1,10 +1,10 @@
 import os
-from lxml.etree import Element, SubElement, tostring
+from lxml.etree import Element, SubElement
 import xml.etree.ElementTree as ET
 import cv2
 
-image_filepath = 'D:/YOLOX/test/img/'
-bb_filepath = 'D:/YOLOX/test/ann/'
+image_filepath = 'D:/YOLOX/Original_dataset/images/'
+bb_filepath = 'D:/YOLOX/Original_dataset/ann/'
 image_filepath_list = os.listdir(image_filepath)
 bb_filepath_list = os.listdir(bb_filepath)
 savepath = 'D:/YOLOX/IOU_dataset'
@@ -113,7 +113,7 @@ def read_content(bb_file):
 def find_bbfile(img_name):
     for bb_filename in bb_filepath_list:
         if img_name[:-4] == bb_filename[:-4]:
-            filename, boxes = read_content('D:/YOLOX/test/ann/{}'.format(bb_filename))
+            filename, boxes = read_content('{}{}'.format(bb_filepath, bb_filename))
     return boxes
 
 
@@ -144,7 +144,10 @@ def bb_iou(boxA, boxB):
     # compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
     # areas - the intersection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
+    if float(boxAArea + boxBArea - interArea) != 0:
+        iou = interArea / float(boxAArea + boxBArea - interArea)
+    else:
+        iou = 0
     # return the intersection over union value
     return iou
 
@@ -154,19 +157,28 @@ def main(img_filepath):
         gt_boxes = find_bbfile(img_name)
         img = cv2.imread(image_filepath + "/" + img_name)
         one_index, six_index, seven_index, eight_index, nine_index = 0, 0, 0, 0, 0
-        for (x, y, window) in sliding_window(img, ystepSize=1, xstepSize=1, windowSize=(winW, winH)):
+        print(img_name)
+        if not os.path.exists('{}/{}'.format(savepath, img_name[:-4])):
+            os.makedirs('{}/{}'.format(savepath, img_name[:-4]))
+            os.makedirs('{}/{}/1'.format(savepath, img_name[:-4]))
+            os.makedirs('{}/{}/06'.format(savepath, img_name[:-4]))
+            os.makedirs('{}/{}/07'.format(savepath, img_name[:-4]))
+            os.makedirs('{}/{}/08'.format(savepath, img_name[:-4]))
+            os.makedirs('{}/{}/09'.format(savepath, img_name[:-4]))
+
+        for (x, y, window) in sliding_window(img, ystepSize=5, xstepSize=5, windowSize=(winW, winH)):
             if x <= gt_boxes[0][0] and x + winW >= gt_boxes[0][2] and y <= gt_boxes[0][1] and y + winH >= gt_boxes[0][3]:
-                bboxes = gt_boxes
+                bboxes = [gt_boxes[0][0], gt_boxes[0][1], gt_boxes[0][2], gt_boxes[0][3]]
                 ann_boxes = [0, 0, 0, 0]
                 ann_boxes[0] = bboxes[0] - x
                 ann_boxes[2] = bboxes[2] - x
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
-                cv2.imwrite('{}/1/1_{}_{}.jpg'.format(savepath, img_name[:-4], one_index), window)
+                cv2.imwrite('{}/{}/1/1_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], one_index), window)
                 write_annotation(im_filename="1_{}_{}.jpg".format(img_name[:-4], one_index),
                                  ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                  ann_ymax=ann_boxes[3],
-                                 ann_filename='{}/1/1_{}_{}.xml'.format(savepath, img_name[:-4], one_index))
+                                 ann_filename='{}/{}/1/1_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], one_index))
                 one_index += 1
 
             elif x < gt_boxes[0][0] and x + winW < gt_boxes[0][2] and y < gt_boxes[0][1] and y + winH < gt_boxes[0][3]:
@@ -179,32 +191,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -219,32 +231,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -259,32 +271,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -299,32 +311,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -339,32 +351,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -379,32 +391,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -419,32 +431,32 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
@@ -459,36 +471,35 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.7 >= iou_output >= 0.6:
-                    cv2.imwrite('{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], six_index), window)
+                    cv2.imwrite('{}/{}/06/06_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], six_index), window)
                     write_annotation(im_filename="06_{}_{}.jpg".format(img_name[:-4], six_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], six_index))
+                                     ann_filename='{}/{}/06/06_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], six_index))
                     six_index += 1
                 elif 0.8 >= iou_output >= 0.7:
-                    cv2.imwrite('{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], seven_index), window)
+                    cv2.imwrite('{}/{}/07/07_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], seven_index), window)
                     write_annotation(im_filename="07_{}_{}.jpg".format(img_name[:-4], seven_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], seven_index))
+                                     ann_filename='{}/{}/07/07_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], seven_index))
                     seven_index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    cv2.imwrite('{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], eight_index), window)
+                    cv2.imwrite('{}/{}/08/08_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], eight_index), window)
                     write_annotation(im_filename="08_{}_{}.jpg".format(img_name[:-4], eight_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], eight_index))
+                                     ann_filename='{}/{}/08/08_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], eight_index))
                     eight_index += 1
                 elif 1 >= iou_output >= 0.9:
-                    cv2.imwrite('{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], nine_index), window)
+                    cv2.imwrite('{}/{}/09/09_{}_{}.jpg'.format(savepath, img_name[:-4], img_name[:-4], nine_index), window)
                     write_annotation(im_filename="09_{}_{}.jpg".format(img_name[:-4], nine_index),
                                      ann_xmin=ann_boxes[0], ann_xmax=ann_boxes[2], ann_ymin=ann_boxes[1],
                                      ann_ymax=ann_boxes[3],
-                                     ann_filename='{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], nine_index))
+                                     ann_filename='{}/{}/09/09_{}_{}.xml'.format(savepath, img_name[:-4], img_name[:-4], nine_index))
                     nine_index += 1
                 else:
                     continue
-
             else:
                 print("No property image ! ")
                 continue
