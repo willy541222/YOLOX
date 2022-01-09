@@ -150,21 +150,15 @@ class Predictor(object):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                # Crop the image.
-                img = window.astype(np.float32)
-                img /= 255.0
-                if self.rgb_means is not None:
-                    img -= self.rgb_means
-                if self.std is not None:
-                    img /= self.std
-                swap = (2, 0, 1)
-                img = img.transpose(swap) # Change to the pytorch require type.
-                img = np.ascontiguousarray(img, dtype=np.float32)
+                # cv2.imshow("cropwindow", window)
+                # cv2.waitKey(0)
+                img, ratio = preproc(window, self.test_size, self.rgb_means, self.std)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
+
                 with torch.no_grad():
-                    outputs = self.model(img) #detection
+                    outputs = self.model(img)  # detection
                     if i == 0:
                         new_outputs = outputs
                         i += 1
@@ -173,31 +167,27 @@ class Predictor(object):
                         # outputs[:, :, :4] = (x center, y center, w, h)
                         outputs[:, :, 0] = torch.add(outputs[:, :, 0], x)
                         outputs[:, :, 1] = torch.add(outputs[:, :, 1], y)
-                        new_outputs = torch.cat((new_outputs, outputs), 1) #(1, 50400, 6)
+                        new_outputs = torch.cat((new_outputs, outputs), 1)  # (1, 50400, 6)
+            # print(new_outputs.tolist())
             if self.decoder is not None:
-                outputs = self.decoder(new_outputs, dtype=outputs.type())
+                new_outputs = self.decoder(new_outputs, dtype=outputs.type())
+                print("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
+            print(outputs)
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
 
         elif image.shape[0] == 1242:
             # 2208*1242 (W*H) y : 602 x : 522
+            i = 0
             t0 = time.time()
             for (x, y, window) in sliding_window(image, ystepSize=602, xstepSize=522,
                                                  windowSize=(winW, winH)):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                img = window.astype(np.float32)
-                img /= 255.0
-                if self.rgb_means is not None:
-                    img -= self.rgb_means
-                if self.std is not None:
-                    img /= self.std
-                swap = (2, 0, 1)
-                img = img.transpose(swap)
-                img = np.ascontiguousarray(img, dtype=np.float32)
+                img, ratio = preproc(window, self.test_size, self.rgb_means, self.std)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
@@ -222,21 +212,14 @@ class Predictor(object):
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
 
         else:
+            i = 0
             t0 = time.time()
             for (x, y, window) in sliding_window(image, ypadding=40, ystepSize=41, xstepSize=320,
                                                  windowSize=(winW, winH)):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
-                img = window.astype(np.float32)
-                img /= 255.0
-                if self.rgb_means is not None:
-                    img -= self.rgb_means
-                if self.std is not None:
-                    img /= self.std
-                swap = (2, 0, 1)
-                img = img.transpose(swap)
-                img = np.ascontiguousarray(img, dtype=np.float32)
+                img, ratio = preproc(window, self.test_size, self.rgb_means, self.std)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
@@ -263,7 +246,7 @@ class Predictor(object):
         return outputs, img_info
 
     def visual(self, output, img_info, cls_conf=0.35):
-        #ratio = img_info["ratio"]
+        # ratio = img_info["ratio"]
         img = img_info["raw_img"]
         if output is None:
             return img
@@ -272,7 +255,7 @@ class Predictor(object):
         bboxes = output[:, 0:4]
 
         # preprocessing: resize
-        #bboxes /= ratio
+        # bboxes /= ratio
 
         cls = output[:, 6]
         scores = output[:, 4] * output[:, 5]

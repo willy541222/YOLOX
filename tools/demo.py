@@ -136,7 +136,6 @@ class Predictor(object):
         img_info["raw_img"] = img
 
         img, ratio = preproc(img, self.test_size, self.rgb_means, self.std)
-        print(img)
         img_info["ratio"] = ratio
         img = torch.from_numpy(img).unsqueeze(0)
         if self.device == "gpu":
@@ -146,9 +145,9 @@ class Predictor(object):
             t0 = time.time()
             outputs = self.model(img)
             #print(type(outputs)) # torch.Tensor
-            #print(outputs)
-            print(len(outputs)) #1
-            print(outputs.shape) #(1,8400,6)
+            print(len(outputs))  # 1
+            print(outputs.shape)  # (1,8400,6)
+            print(outputs.tolist())  # print complete list.
             if self.decoder is not None:
                 outputs = self.decoder(outputs, dtype=outputs.type())
             outputs = postprocess(
