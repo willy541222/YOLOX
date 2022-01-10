@@ -176,6 +176,19 @@ class Predictor(object):
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
             print(outputs)
+            if len(outputs[0]) == 2:
+                li_outputs = []
+                temp = torch.empty(1, 7)
+                temp[0][0] = torch.min(outputs[0][0, 0], outputs[0][1, 0])
+                temp[0][1] = torch.min(outputs[0][0, 1], outputs[0][1, 1])
+                temp[0][2] = torch.max(outputs[0][0, 2], outputs[0][1, 2])
+                temp[0][3] = torch.max(outputs[0][0, 3], outputs[0][1, 3])
+                temp[0][4] = torch.add(outputs[0][0, 4], outputs[0][1, 4]) / 2
+                temp[0][5] = torch.add(outputs[0][0, 5], outputs[0][1, 5]) / 2
+                temp[0][6] = torch.add(outputs[0][0, 6], outputs[0][1, 6]) / 2
+                li_outputs.append(temp)
+                outputs = li_outputs
+
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
 
         elif image.shape[0] == 1242:
