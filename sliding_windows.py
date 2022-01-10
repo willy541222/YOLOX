@@ -5,31 +5,33 @@ import cv2
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True, help="Path to the image")
-ap.add_argument("-s", "--resize", nargs='+', help="The size to resize the image")
+ap.add_argument("-s", "--resize", nargs='+', default=None, help="The size to resize the image")
 args = vars(ap.parse_args())
 
 image_name = os.path.basename(args["image"])
 image = cv2.imread(args["image"])
 print(type(image))
-if args["resize"] != None:
+
+
+if args["resize"] != "None":
     image = cv2.resize(image, (int(args["resize"][0]), int(args["resize"][1])))
 
 # define sliding Windows.
 (winW, winH) = (640, 640)
 
 
-def sliding_window(image, ystepSize, xstepSize, windowSize, ypadding=0):
-    for y in range(ypadding, image.shape[0], ystepSize):
-        for x in range(0, image.shape[1], xstepSize):
+def sliding_window(img, ystepsize, xstepsize, windowsize, ypadding=0):
+    for y in range(ypadding, img.shape[0], ystepsize):
+        for x in range(0, img.shape[1], xstepsize):
             # yield the current window
-            yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]])
+            yield x, y, img[y:y + windowsize[1], x:x + windowsize[0]]
     return
 
 
 if image.shape[0] == 1080:
     # 1920*1080 (W*H) y : 440 x : 640
     i = 0
-    for (x, y, window) in sliding_window(image, ystepSize=440, xstepSize=640, windowSize=(winW, winH)):
+    for (x, y, window) in sliding_window(image, ystepsize=440, xstepsize=640, windowsize=(winW, winH)):
         # if the window does not meet our desired window size, ignore it
         if window.shape[0] != winH or window.shape[1] != winW:
             continue
@@ -46,7 +48,7 @@ if image.shape[0] == 1080:
 elif image.shape[0] == 1242:
     # 2208*1242 (W*H) y : 602 x : 522
     i = 0
-    for (x, y, window) in sliding_window(image, ystepSize=602, xstepSize=522, windowSize=(winW, winH)):
+    for (x, y, window) in sliding_window(image, ystepsize=602, xstepsize=522, windowsize=(winW, winH)):
         # if the window does not meet our desired window size, ignore it
         if window.shape[0] != winH or window.shape[1] != winW:
             continue
@@ -62,7 +64,7 @@ elif image.shape[0] == 1242:
 
 else:
     i = 0
-    for (x, y, window) in sliding_window(image, ypadding=40, ystepSize=41, xstepSize=320, windowSize=(winW, winH)):
+    for (x, y, window) in sliding_window(image, ypadding=40, ystepsize=41, xstepsize=320, windowsize=(winW, winH)):
         # if the window does not meet our desired window size, ignore it
         if window.shape[0] != winH or window.shape[1] != winW:
             continue
