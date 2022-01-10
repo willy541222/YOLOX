@@ -175,7 +175,6 @@ class Predictor(object):
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
-            print(outputs)
             if len(outputs[0]) == 2:
                 li_outputs = []
                 temp = torch.empty(1, 7)
@@ -190,6 +189,7 @@ class Predictor(object):
                 outputs = li_outputs
 
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
+            print(outputs)
 
         elif image.shape[0] == 1242:
             # 2208*1242 (W*H) y : 602 x : 522
