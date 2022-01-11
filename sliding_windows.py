@@ -13,7 +13,7 @@ image = cv2.imread(args["image"])
 print(type(image))
 
 
-if args["resize"] != "None":
+if args["resize"] != None:
     image = cv2.resize(image, (int(args["resize"][0]), int(args["resize"][1])))
 
 # define sliding Windows.
@@ -40,7 +40,7 @@ if image.shape[0] == 1080:
         img_crop = clone[y:y + winH, x:x + winW]
         print(img_crop.shape)
         cv2.imshow("Window", clone)
-        cv2.imwrite("{}_{}.jpg".format(image_name, i), window)
+        cv2.imwrite("{}_{}.jpg".format(image_name[:-4], i), window)
         i += 1
         cv2.waitKey(1)
         time.sleep(1)
@@ -57,7 +57,7 @@ elif image.shape[0] == 1242:
         img_crop = clone[y:y + winH, x:x + winW]
         print(img_crop.shape)
         cv2.imshow("Window", clone)
-        cv2.imwrite("{}_{}.jpg".format(image_name, i), window)
+        cv2.imwrite("{}_{}.jpg".format(image_name[:-4], i), window)
         i += 1
         cv2.waitKey(1)
         time.sleep(1)
@@ -74,7 +74,7 @@ else:
         img_crop = clone[y:y + winH, x:x + winW]
         print(img_crop.shape)
         cv2.imshow("Window", clone)
-        cv2.imwrite("{}_{}.jpg".format(image_name, i), window)
+        cv2.imwrite("{}_{}.jpg".format(image_name[:-4], i), window)
         i += 1
         cv2.waitKey(1)
         time.sleep(1)
