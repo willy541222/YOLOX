@@ -175,6 +175,7 @@ class Predictor(object):
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
+            print(outputs)
             if len(outputs[0]) == 2:
                 li_outputs = []
                 temp = torch.empty(1, 7)
