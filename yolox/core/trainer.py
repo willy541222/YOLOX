@@ -97,9 +97,9 @@ class Trainer:
 
         outputs = self.model(inps, targets)
         loss = outputs["total_loss"]
-        # Add the total_loss to tensorboard.
-        if (self.iter + 1) % self.max_iter == 0:
-            self.tblogger.add_scalar("train/Total_loss", loss, self.epoch + 1)
+        # # Add the total_loss to tensorboard.
+        # if (self.iter + 1) % self.max_iter == 0:
+        #     self.tblogger.add_scalar("train/Total_loss", loss, self.epoch + 1)
 
         self.optimizer.zero_grad()
         if self.amp_training:
