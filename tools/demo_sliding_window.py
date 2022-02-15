@@ -176,7 +176,9 @@ class Predictor(object):
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
             print(outputs)
-            if len(outputs[0]) == 2:
+            if outputs[0] is None:
+                pass
+            elif len(outputs[0]) == 2:
                 li_outputs = []
                 temp = torch.empty(1, 7)
                 temp[0][0] = torch.min(outputs[0][0, 0], outputs[0][1, 0])
@@ -201,29 +203,49 @@ class Predictor(object):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
+                    # cv2.imshow("cropwindow", window)
+                    # cv2.waitKey(0)
                 img, ratio = preproc(window, self.test_size, self.rgb_means, self.std)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
+
                 with torch.no_grad():
-                    outputs = self.model(img)
-                    # print(outputs)
+                    outputs = self.model(img)  # detection
                     if i == 0:
                         new_outputs = outputs
                         i += 1
                     else:
-                        # print(outputs[:, :, 0])
+                        # The bounding box of sliding image need to return the real position.
+                        # outputs[:, :, :4] = (x center, y center, w, h)
                         outputs[:, :, 0] = torch.add(outputs[:, :, 0], x)
                         outputs[:, :, 1] = torch.add(outputs[:, :, 1], y)
-                        # print(outputs[:, :, 1])
-                        new_outputs = torch.cat((new_outputs, outputs), 1)
-                    # print(new_outputs.shape)
+                        new_outputs = torch.cat((new_outputs, outputs), 1)  # (1, 50400, 6)
+                # print(new_outputs.tolist())
             if self.decoder is not None:
-                outputs = self.decoder(new_outputs, dtype=outputs.type())
+                new_outputs = self.decoder(new_outputs, dtype=outputs.type())
+                print("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
+            print(outputs)
+            if outputs[0] is None:
+                pass
+            elif len(outputs[0]) == 2:
+                li_outputs = []
+                temp = torch.empty(1, 7)
+                temp[0][0] = torch.min(outputs[0][0, 0], outputs[0][1, 0])
+                temp[0][1] = torch.min(outputs[0][0, 1], outputs[0][1, 1])
+                temp[0][2] = torch.max(outputs[0][0, 2], outputs[0][1, 2])
+                temp[0][3] = torch.max(outputs[0][0, 3], outputs[0][1, 3])
+                temp[0][4] = torch.add(outputs[0][0, 4], outputs[0][1, 4]) / 2
+                temp[0][5] = torch.add(outputs[0][0, 5], outputs[0][1, 5]) / 2
+                temp[0][6] = torch.add(outputs[0][0, 6], outputs[0][1, 6]) / 2
+                li_outputs.append(temp)
+                outputs = li_outputs
+
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
+            print(outputs)
 
         else:
             i = 0
@@ -233,29 +255,49 @@ class Predictor(object):
                 # if the window does not meet our desired window size, ignore it
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
+                    # cv2.imshow("cropwindow", window)
+                    # cv2.waitKey(0)
                 img, ratio = preproc(window, self.test_size, self.rgb_means, self.std)
                 img = torch.from_numpy(img).unsqueeze(0)
                 if self.device == "gpu":
                     img = img.cuda()
+
                 with torch.no_grad():
-                    outputs = self.model(img)
-                    # print(outputs)
+                    outputs = self.model(img)  # detection
                     if i == 0:
                         new_outputs = outputs
                         i += 1
                     else:
-                        # print(outputs[:, :, 0])
+                        # The bounding box of sliding image need to return the real position.
+                        # outputs[:, :, :4] = (x center, y center, w, h)
                         outputs[:, :, 0] = torch.add(outputs[:, :, 0], x)
                         outputs[:, :, 1] = torch.add(outputs[:, :, 1], y)
-                        # print(outputs[:, :, 1])
-                        new_outputs = torch.cat((new_outputs, outputs), 1)
-                    # print(new_outputs.shape)
+                        new_outputs = torch.cat((new_outputs, outputs), 1)  # (1, 50400, 6)
+                # print(new_outputs.tolist())
             if self.decoder is not None:
-                outputs = self.decoder(new_outputs, dtype=outputs.type())
+                new_outputs = self.decoder(new_outputs, dtype=outputs.type())
+                print("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
+            print(outputs)
+            if outputs[0] is None:
+                pass
+            elif len(outputs[0]) == 2:
+                li_outputs = []
+                temp = torch.empty(1, 7)
+                temp[0][0] = torch.min(outputs[0][0, 0], outputs[0][1, 0])
+                temp[0][1] = torch.min(outputs[0][0, 1], outputs[0][1, 1])
+                temp[0][2] = torch.max(outputs[0][0, 2], outputs[0][1, 2])
+                temp[0][3] = torch.max(outputs[0][0, 3], outputs[0][1, 3])
+                temp[0][4] = torch.add(outputs[0][0, 4], outputs[0][1, 4]) / 2
+                temp[0][5] = torch.add(outputs[0][0, 5], outputs[0][1, 5]) / 2
+                temp[0][6] = torch.add(outputs[0][0, 6], outputs[0][1, 6]) / 2
+                li_outputs.append(temp)
+                outputs = li_outputs
+
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
+            print(outputs)
 
         return outputs, img_info
 

@@ -1,7 +1,8 @@
 import pandas as pd
-import plotly.graph_objects as go
+import plotly.express as px
+# import plotly.graph_objects as go
 
-csvfile = "D:/YOLOX/YOLOX_outputs/yolox_landing_platform_nano/run-.-tag-val_AP50_95.csv"
+csvfile = "D:/YOLOX/YOLOX_outputs/yolox_landing_platform_nano/run-.-tag-Train_iou loss.csv"
 
 
 def train_response():
@@ -10,27 +11,40 @@ def train_response():
 
 
 df = train_response()
-# fig = px.line(df, x="Epoch", y="Loss", title='YOLOX_nano Landing Platform Training Response Total Loss',)
+fig = px.line(df, x="Step", y="Value")
 # fig.show()
 
 
-fig = go.Figure(go.Scatter(x=df['Step'], y=df['Value'], name=""))
-
-fig.update_layout(plot_bgcolor='rgb(230, 230,230)',
+# fig = go.Figure(go.Scatter(x=df['Step'], y=df['Value'], name=""))
+fig.update_xaxes(showline=True, linewidth=1, linecolor='black',
+                 showgrid=True, gridwidth=0.25, gridcolor='gray',
+                 tickfont_family="Arial Black")
+fig.update_yaxes(showline=True, linewidth=1, linecolor='black',
+                 showgrid=True, gridwidth=0.25, gridcolor='gray',
+                 tickfont_family="Arial Black")
+fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  width=1600,
+                  height=800,
                   showlegend=True,
                   xaxis_title="Epoch",
-                  yaxis_title="Mean Average Precision 50:95",
+                  yaxis_title="IOU loss",
                   yaxis=dict(
-                      dtick=0.05
+                      dtick=0.4
                   ),
                   xaxis=dict(
                     tick0=0,
                     dtick=25
                   ),
                   font=dict(
-                      size=28,
-                      family="Times New Roman"
+                      size=35,
+                      family="Arial Black",
                   )
                   )
+fig.update_traces(
+    line=dict(
+        width=5
+    )
+)
 
 fig.show()

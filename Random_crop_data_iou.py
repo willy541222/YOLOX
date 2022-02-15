@@ -11,7 +11,7 @@ bb_filepath = 'D:/YOLOX/Original_dataset/ann/'
 image_filepath_list = os.listdir(image_filepath)
 bb_filepath_list = os.listdir(bb_filepath)
 savepath = 'D:/YOLOX/IOU_dataset/Data'
-per_img_samples = 1
+per_img_samples = 2
 (winW, winH) = (640, 640)
 Crop_image = namedtuple("Crop_image", ["Image_name", "iou", "window", "bboxes"])
 
@@ -167,6 +167,8 @@ def main(img_filepath):
         example = []
         print(img_name)
         for (x, y, window) in sliding_window(img, ystepSize=5, xstepSize=5, windowSize=(winW, winH)):
+            if window.shape[0] != winH or window.shape[1] != winW:
+                continue
             if x <= gt_boxes[0][0] and x + winW >= gt_boxes[0][2] and y <= gt_boxes[0][1] and y + winH >= gt_boxes[0][3]:
                 bboxes = [gt_boxes[0][0], gt_boxes[0][1], gt_boxes[0][2], gt_boxes[0][3]]
                 ann_boxes = [0, 0, 0, 0]
