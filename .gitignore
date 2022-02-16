@@ -222,3 +222,4 @@ events.out.tfevents*
 /IOU_dataset/
 /Resize_image.py
 /assets/
+/model_sum.py
