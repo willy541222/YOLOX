@@ -7,7 +7,8 @@ import sys
 sys.path.append(r'D:/YOLOX')
 from yolox.exp import get_exp
 from yolox.utils import get_model_info
-from torchsummary import summary
+# from torchsummary import summary
+from torchinfo import summary
 import argparse
 
 
@@ -32,7 +33,9 @@ def main(exp):
     logger.info("Model Summary: {}".format(get_model_info(model, (640, 640))))
     # model.eval()
     # print(model)
-    summary(model, (3, 640, 640))
+    # summary(model, (3, 640, 640))  # For pytorch_summary
+    batch_size = 16
+    summary(model, input_size=(batch_size, 3, 640, 640), depth=15)
 
 
 if __name__ == "__main__":

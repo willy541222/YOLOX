@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 # import plotly.graph_objects as go
 
-csvfile = "D:/YOLOX/YOLOX_outputs/yolox_landing_platform_nano/run-.-tag-Train_iou loss.csv"
+csvfile = "D:/YOLOX/YOLOX_outputs/yolox_landing_platform_nano_500/run-.-tag-val_AP50_95.csv"
 
 
 def train_response():
@@ -28,9 +28,9 @@ fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                   height=800,
                   showlegend=True,
                   xaxis_title="Epoch",
-                  yaxis_title="IOU loss",
+                  yaxis_title="Average Precision 5095",
                   yaxis=dict(
-                      dtick=0.4
+                      dtick=0.02
                   ),
                   xaxis=dict(
                     tick0=0,

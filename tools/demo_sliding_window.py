@@ -14,7 +14,7 @@ from yolox.data.data_augment import preproc, sliding_window
 from yolox.data.datasets import COCO_CLASSES
 from yolox.exp import get_exp
 from yolox.utils import fuse_model, get_model_info, postprocess, vis
-#import pyzed.sl as sl
+import pyzed.sl as sl
 import argparse
 import os
 import time
@@ -383,44 +383,75 @@ def zed_demo(predictor, vis_folder, current_time, args):
     init_params.depth_mode = sl.DEPTH_MODE.ULTRA  # Use PERFORMANCE depth mode
     init_params.coordinate_units = sl.UNIT.METER  # Use meter units (for depth measurements)
     init_params.camera_resolution = sl.RESOLUTION.HD1080
+
     # Open the camera
-    err = zed.open(init_params)
-    if err != sl.ERROR_CODE.SUCCESS:
+    status = zed.open(init_params)
+    if status != sl.ERROR_CODE.SUCCESS:
+        print(repr(status))
+        zed.close()
         exit(1)
+
     # Set runtime parameters after opening the camera
     runtime = sl.RuntimeParameters()
     runtime.sensing_mode = sl.SENSING_MODE.STANDARD
 
-    im = sl.Mat()
-    point_cloud = sl.Mat()
+    # Prepare new image size to retrieve half-resolution images
+    image_size = zed.get_camera_information().camera_resolution
+    # image_size.width = image_size.width / 2
+    # image_size.height = image_size.height / 2
 
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    # Declare your sl.Mat matrices
+    im = sl.Mat()
+    # print(im)
+    point_cloud = sl.Mat()
+    # print(point_cloud)
+
     save_folder = os.path.join(
         vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
     )
     os.makedirs(save_folder, exist_ok=True)
     save_path = os.path.join(save_folder, "zed_camera.mp4")
     logger.info(f"video save_path is {save_path}")
-    vid_writer = cv2.VideoWriter(
-        save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+
+    # err = zed.enable_recording(save_path, sl.SVO_COMPRESSION_MODE.H264)
+    # if err != sl.ERROR_CODE.SUCCESS:
+    #     print(repr(err))
+    #     zed.close()
+    #     exit(1)
+    out = cv2.VideoWriter(
+        save_path,
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        1,
+        (int(image_size.width), int(image_size.height),)
     )
     while True:
-        if zed.grab(runtime_parameters) == sl.ERROR_CODE.SUCCESS:
+        if zed.grab(runtime) == sl.ERROR_CODE.SUCCESS:
             zed.retrieve_image(im, sl.VIEW.LEFT)
             zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
+
+            im_ocv = im.get_data()
+            print(im_ocv.shape)
+            start_time = time.time()
+            outputs, img_info = predictor.inference(im_ocv[:, :, :3])
+            print(outputs)
+            result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
+            end_time = time.time()
+            fps = 1 / (end_time-start_time)
+            if outputs[0] is not None:
+                px = torch.add(outputs[0][0], outputs[0][2]) / 2
+                py = torch.add(outputs[0][1], outputs[1][3]) / 2
+                perr, point_cloud_value = point_cloud.get_value(px, py)
+                print("The point coordinate is x:{}, y:{}, z:{}".format(point_cloud_value[0], point_cloud_value[1],
+                                                                        point_cloud_value[2]))
+            if args.save_result:
+                out.write(result_frame)
+            ch = cv2.waitKey(1)
+            if ch == 27 or ch == ord("q") or ch == ord("Q"):
+                break
         else:
             break
-        im_ocv = im.get_data()
 
-        outputs, img_info = predictor.inference(im_ocv)
-        result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
-        if args.save_result:
-            vid_writer.write(result_frame)
-        ch = cv2.waitKey(1)
-        if ch == 27 or ch == ord("q") or ch == ord("Q"):
-            break
+    # zed.disable_recording()
 
 
 
