@@ -9,6 +9,7 @@ import cv2
 
 import torch
 import sys
+
 sys.path.append(r'D:/YOLOX')
 from yolox.data.data_augment import preproc, sliding_window
 from yolox.data.datasets import COCO_CLASSES
@@ -19,6 +20,7 @@ import argparse
 import os
 import time
 import numpy as np
+
 # </editor-fold>
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
@@ -97,13 +99,13 @@ def get_image_list(path):
 
 class Predictor(object):
     def __init__(
-        self,
-        model,
-        exp,
-        cls_names=COCO_CLASSES,
-        trt_file=None,
-        decoder=None,
-        device="cpu",
+            self,
+            model,
+            exp,
+            cls_names=COCO_CLASSES,
+            trt_file=None,
+            decoder=None,
+            device="cpu",
     ):
         self.model = model
         self.cls_names = cls_names
@@ -387,7 +389,7 @@ def zed_demo(predictor, vis_folder, current_time, args):
     # Open the camera
     status = zed.open(init_params)
     if status != sl.ERROR_CODE.SUCCESS:
-        logger.debug(repr(status))
+        logger.error(repr(status))
         zed.close()
         exit(1)
 
@@ -425,15 +427,16 @@ def zed_demo(predictor, vis_folder, current_time, args):
             outputs, img_info = predictor.inference(im_ocv[:, :, :3])
             result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
             end_time = time.time()
-            fps = 1 / (end_time-start_time)
+            fps = 1 / (end_time - start_time)
             logger.info("FPS : {}".format(fps))
             if outputs[0] is not None:
                 logger.info("The target has detect : {}".format(outputs[0]))
                 px = torch.add(outputs[0][0], outputs[0][2]) / 2
                 py = torch.add(outputs[0][1], outputs[1][3]) / 2
                 perr, point_cloud_value = point_cloud.get_value(px, py)
-                logger.info("The point coordinate is x:{}, y:{}, z:{}".format(point_cloud_value[0], point_cloud_value[1],
-                                                                        point_cloud_value[2]))
+                logger.info(
+                    "The point coordinate is x:{}, y:{}, z:{}".format(point_cloud_value[0], point_cloud_value[1],
+                                                                      point_cloud_value[2]))
             if args.save_result:
                 out.write(result_frame)
             ch = cv2.waitKey(1)
