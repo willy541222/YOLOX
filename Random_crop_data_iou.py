@@ -179,7 +179,7 @@ def main(img_filepath):
                 example.append(Crop_image('1_{}_{}'.format(img_name[:-4], index), '1', window, ann_boxes))
                 index += 1
 
-            if x < gt_boxes[0][0] and x + winW < gt_boxes[0][2] and y < gt_boxes[0][1] and y + winH < gt_boxes[0][3]:
+            elif x < gt_boxes[0][0] and x + winW < gt_boxes[0][2] and y < gt_boxes[0][1] and y + winH < gt_boxes[0][3]:
                 bboxes = [gt_boxes[0][0], gt_boxes[0][1], x + winW, y + winH]
                 iou_output = bb_iou(gt_boxes[0], bboxes)
                 print(iou_output)
@@ -189,13 +189,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -210,13 +210,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -231,13 +231,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -252,13 +252,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -273,13 +273,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -294,13 +294,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -315,13 +315,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue
@@ -336,13 +336,13 @@ def main(img_filepath):
                 ann_boxes[1] = bboxes[1] - y
                 ann_boxes[3] = bboxes[3] - y
                 if 0.8 >= iou_output >= 0.7:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
+                    example.append(Crop_image('0.7_{}_{}'.format(img_name[:-4], index), '0.7', window, ann_boxes))
                     index += 1
                 elif 0.9 >= iou_output >= 0.8:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
+                    example.append(Crop_image('0.8_{}_{}'.format(img_name[:-4], index), '0.8', window, ann_boxes))
                     index += 1
                 elif 1 >= iou_output >= 0.9:
-                    example.append(Crop_image('{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
+                    example.append(Crop_image('0.9_{}_{}'.format(img_name[:-4], index), '0.9', window, ann_boxes))
                     index += 1
                 else:
                     continue

@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 # import plotly.graph_objects as go
 
-csvfile = "D:/YOLOX/YOLOX_outputs/yolox_landing_platform_nano_500/run-.-tag-val_AP50_95.csv"
+csvfile = "D:/YOLOX/YOLOX_outputs/yolox_slp_adam/run-.-tag-val_AP50.csv"
 
 
 def train_response():
@@ -25,12 +25,13 @@ fig.update_yaxes(showline=True, linewidth=1, linecolor='black',
 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0)',
                   width=1600,
-                  height=800,
+                  height=1200,
                   showlegend=True,
                   xaxis_title="Epoch",
-                  yaxis_title="Average Precision 5095",
+                  yaxis_title="Average Precision 50",
+                  yaxis_range=[0, 1],
                   yaxis=dict(
-                      dtick=0.02
+                      dtick=0.2
                   ),
                   xaxis=dict(
                     tick0=0,

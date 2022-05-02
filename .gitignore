@@ -4,6 +4,7 @@
 # user experiments directory
 datasets/
 YOLOX_outputs/
+exps/
 assets/
 IOU_dataset/
 Original_dataset/

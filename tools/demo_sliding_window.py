@@ -13,7 +13,7 @@ sys.path.append(r'D:/YOLOX')
 from yolox.data.data_augment import preproc, sliding_window
 from yolox.data.datasets import COCO_CLASSES
 from yolox.exp import get_exp
-from yolox.utils import fuse_model, get_model_info, postprocess, vis
+from yolox.utils import fuse_model, get_model_info, postprocess, vis, setup_logger
 import pyzed.sl as sl
 import argparse
 import os
@@ -171,11 +171,11 @@ class Predictor(object):
             # print(new_outputs.tolist())
             if self.decoder is not None:
                 new_outputs = self.decoder(new_outputs, dtype=outputs.type())
-                print("Pass through decoder.")
+                logger.info("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
-            print(outputs)
+            logger.info(outputs)
             if outputs[0] is None:
                 pass
             elif len(outputs[0]) == 2:
@@ -192,7 +192,7 @@ class Predictor(object):
                 outputs = li_outputs
 
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
-            print(outputs)
+            logger.info(outputs)
 
         elif image.shape[0] == 1242:
             # 2208*1242 (W*H) y : 602 x : 522
@@ -224,11 +224,11 @@ class Predictor(object):
                 # print(new_outputs.tolist())
             if self.decoder is not None:
                 new_outputs = self.decoder(new_outputs, dtype=outputs.type())
-                print("Pass through decoder.")
+                logger.info("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
-            print(outputs)
+            logger.info(outputs)
             if outputs[0] is None:
                 pass
             elif len(outputs[0]) == 2:
@@ -245,7 +245,7 @@ class Predictor(object):
                 outputs = li_outputs
 
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
-            print(outputs)
+            logger.info(outputs)
 
         else:
             i = 0
@@ -276,11 +276,11 @@ class Predictor(object):
                 # print(new_outputs.tolist())
             if self.decoder is not None:
                 new_outputs = self.decoder(new_outputs, dtype=outputs.type())
-                print("Pass through decoder.")
+                logger.info("Pass through decoder.")
             outputs = postprocess(
                 new_outputs, self.num_classes, self.confthre, self.nmsthre
             )
-            print(outputs)
+            logger.info(outputs)
             if outputs[0] is None:
                 pass
             elif len(outputs[0]) == 2:
@@ -297,7 +297,7 @@ class Predictor(object):
                 outputs = li_outputs
 
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
-            print(outputs)
+            logger.info(outputs)
 
         return outputs, img_info
 
@@ -387,7 +387,7 @@ def zed_demo(predictor, vis_folder, current_time, args):
     # Open the camera
     status = zed.open(init_params)
     if status != sl.ERROR_CODE.SUCCESS:
-        print(repr(status))
+        logger.debug(repr(status))
         zed.close()
         exit(1)
 
@@ -397,27 +397,18 @@ def zed_demo(predictor, vis_folder, current_time, args):
 
     # Prepare new image size to retrieve half-resolution images
     image_size = zed.get_camera_information().camera_resolution
-    # image_size.width = image_size.width / 2
-    # image_size.height = image_size.height / 2
 
-    # Declare your sl.Mat matrices
     im = sl.Mat()
-    # print(im)
     point_cloud = sl.Mat()
-    # print(point_cloud)
 
     save_folder = os.path.join(
         vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
     )
+
     os.makedirs(save_folder, exist_ok=True)
     save_path = os.path.join(save_folder, "zed_camera.mp4")
     logger.info(f"video save_path is {save_path}")
 
-    # err = zed.enable_recording(save_path, sl.SVO_COMPRESSION_MODE.H264)
-    # if err != sl.ERROR_CODE.SUCCESS:
-    #     print(repr(err))
-    #     zed.close()
-    #     exit(1)
     out = cv2.VideoWriter(
         save_path,
         cv2.VideoWriter_fourcc(*"mp4v"),
@@ -430,18 +421,18 @@ def zed_demo(predictor, vis_folder, current_time, args):
             zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
 
             im_ocv = im.get_data()
-            print(im_ocv.shape)
             start_time = time.time()
             outputs, img_info = predictor.inference(im_ocv[:, :, :3])
-            print(outputs)
             result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
             end_time = time.time()
             fps = 1 / (end_time-start_time)
+            logger.info("FPS : {}".format(fps))
             if outputs[0] is not None:
+                logger.info("The target has detect : {}".format(outputs[0]))
                 px = torch.add(outputs[0][0], outputs[0][2]) / 2
                 py = torch.add(outputs[0][1], outputs[1][3]) / 2
                 perr, point_cloud_value = point_cloud.get_value(px, py)
-                print("The point coordinate is x:{}, y:{}, z:{}".format(point_cloud_value[0], point_cloud_value[1],
+                logger.info("The point coordinate is x:{}, y:{}, z:{}".format(point_cloud_value[0], point_cloud_value[1],
                                                                         point_cloud_value[2]))
             if args.save_result:
                 out.write(result_frame)
@@ -451,9 +442,6 @@ def zed_demo(predictor, vis_folder, current_time, args):
         else:
             break
 
-    # zed.disable_recording()
-
-
 
 def main(exp, args):
     if not args.experiment_name:
@@ -461,10 +449,20 @@ def main(exp, args):
 
     file_name = os.path.join(exp.output_dir, args.experiment_name)
     os.makedirs(file_name, exist_ok=True)
+    current_time = time.localtime()
 
     if args.save_result:
         vis_folder = os.path.join(file_name, "vis_res")
         os.makedirs(vis_folder, exist_ok=True)
+        log_save_folder = os.path.join(
+            vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
+        )
+        setup_logger(
+            log_save_folder,
+            distributed_rank=0,
+            filename="Detection_log.txt",
+            mode="a",
+        )
 
     if args.trt:
         args.device = "gpu"
@@ -514,7 +512,6 @@ def main(exp, args):
         decoder = None
 
     predictor = Predictor(model, exp, COCO_CLASSES, trt_file, decoder, args.device)
-    current_time = time.localtime()
     if args.demo == "image":
         image_demo(predictor, vis_folder, args.path, current_time, args.save_result)
     elif args.demo == "video" or args.demo == "webcam":
